@@ -1,0 +1,5 @@
+export enum Mode {
+	FOLLOWER = 'FOLLOWER',
+	CANDIDATE = 'CANDIDATE',
+	LEADER = 'LEADER',
+}
