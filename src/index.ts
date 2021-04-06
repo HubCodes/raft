@@ -41,6 +41,7 @@ app.listen(config.self.port, () => {
 	console.log('Raft server listening at port ' + config.self.port);
 });
 
+// REF: 5-2-1
 async function handleElectionTimeout(state: State) {
 	state.toCandidate();
 	const requests = [];
@@ -54,13 +55,24 @@ async function handleElectionTimeout(state: State) {
 		requests.push(axios.post(`http://${peer.host}:${peer.port}/vote`, requestVote));
 	}
 	const replies: RequestVoteReply[] = (await Promise.all(requests)).map(({ data }) => data);
+	const currentTerm = state.getCurrentTerm();
 	for (const requestVoteReply of replies) {
-		if (requestVoteReply.term === state.getCurrentTerm() && requestVoteReply.voteGranted) {
+		if (requestVoteReply.term === currentTerm && requestVoteReply.voteGranted) {
 			state.receiveVote(requestVoteReply.peerId);
 		}
 	}
+	// REF: 5-2-3
 	if (state.isCandidate() && state.isReceivedVoteMajority()) {
 		state.toLeader();
+		const heartbeats = [];
+		// REF: 5-2-4
+		for (const peer of config.peers) {
+			// TODO: 제대로 구현하기
+			// @ts-ignore
+			const heartbeat: AppendEntry = {};
+			heartbeats.push(axios.put(`http://${peer.host}:${peer.port}/entry`, heartbeat));
+		}
+		await Promise.all(heartbeats);
 	}
 }
 

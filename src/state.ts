@@ -104,7 +104,7 @@ export class State {
 
 	toCandidate() {
 		this.mode = Mode.CANDIDATE;
-		this.currentTerm += 1;
+		this.currentTerm += 1;  // REF: 5-2-2
 		this.vote(this.selfPeerId);
 	}
 
